@@ -15,23 +15,13 @@
  * limitations under the License.
  */
 
-package org.apache.spark.sql.streaming
+package org.apache.spark.sql.hive
 
-import org.apache.spark.rdd.{EmptyRDD, RDD}
-import org.apache.spark.sql.Row
-import org.apache.spark.sql.catalyst.plans.logical
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
-import org.apache.spark.sql.execution.SparkPlan
-import org.apache.spark.streaming.Duration
-import org.apache.spark.streaming.dstream.DStream
 
-/**
- * Logical and physical plan of time-based window.
- */
-private[streaming] case class WindowedLogicalPlan(
-    windowDuration: Duration,
-    slideDuration: Option[Duration],
-    child: LogicalPlan)
-  extends logical.UnaryNode {
-  override def output = child.output
+private[sql] object SparkHiveShim {
+  /**
+   * To guard out some unsupported logical plans.
+   */
+  def guardLogical(logical: LogicalPlan): LogicalPlan = logical
 }

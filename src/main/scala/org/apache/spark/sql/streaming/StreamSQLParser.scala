@@ -46,7 +46,7 @@ class StreamSQLParser(streamSqlConnector: StreamSQLContext) extends SqlParser {
 
   def apply(input: String, exceptionOnError: Boolean): Option[LogicalPlan] = {
     try {
-      Some(apply(input))
+      Some(SparkShim.sparkParse(this, input))
     } catch {
       case _ if !exceptionOnError => None
       case x: Throwable => throw x

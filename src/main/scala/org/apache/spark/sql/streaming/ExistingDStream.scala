@@ -22,8 +22,6 @@ import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.analysis.MultiInstanceRelation
 import org.apache.spark.sql.catalyst.expressions.Attribute
 import org.apache.spark.sql.catalyst.plans.logical.{Statistics, LogicalPlan}
-import org.apache.spark.sql.execution.SparkPlan
-import org.apache.spark.streaming.Time
 import org.apache.spark.streaming.dstream.DStream
 
 /** A LogicalPlan wrapper of row based DStream. */
@@ -39,23 +37,4 @@ case class LogicalDStream(output: Seq[Attribute], stream: DStream[Row])
   @transient override lazy val statistics = Statistics(
     sizeInBytes = BigInt(streamSqlContext.sqlContext.conf.defaultSizeInBytes)
   )
-}
-
-/**
- * A PhysicalPlan wrapper of row based DStream, inject the validTime and generate an effective
- * RDD of current batchDuration.
- */
-private[streaming]
-case class PhysicalDStream(output: Seq[Attribute], @transient stream: DStream[Row])
-    extends SparkPlan with StreamPlan {
-  import DStreamHelper._
-
-  def children = Nil
-
-  override def execute() = {
-    assert(validTime != null)
-    Utils.invoke(classOf[DStream[Row]], stream, "getOrCompute", (classOf[Time], validTime))
-      .asInstanceOf[Option[RDD[Row]]]
-      .getOrElse(new EmptyRDD[Row](sparkContext))
-  }
 }

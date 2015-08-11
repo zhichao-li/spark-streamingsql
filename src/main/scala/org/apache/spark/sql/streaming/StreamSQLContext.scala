@@ -60,7 +60,7 @@ class StreamSQLContext(
     StreamPlan.currentContext.set(this)
     val schema = ScalaReflection.schemaFor[A].dataType.asInstanceOf[StructType]
     val attributeSeq = schema.toAttributes
-    val rowStream = stream.transform(rdd => RDDConversions.productToRowRdd(rdd, schema))
+    val rowStream = stream.transform(rdd => SparkShim.productToRowRdd(rdd, schema))
     new SchemaDStream(this, LogicalDStream(attributeSeq, rowStream)(this))
   }
 

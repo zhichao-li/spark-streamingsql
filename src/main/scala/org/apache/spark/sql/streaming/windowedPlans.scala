@@ -17,13 +17,9 @@
 
 package org.apache.spark.sql.streaming
 
-import org.apache.spark.rdd.{EmptyRDD, RDD}
-import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.plans.logical
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
-import org.apache.spark.sql.execution.SparkPlan
 import org.apache.spark.streaming.Duration
-import org.apache.spark.streaming.dstream.DStream
 
 /**
  * Logical and physical plan of time-based window.

@@ -24,6 +24,7 @@ import scalariform.formatter.preferences._
 
 object Properties {
   val SPARK_VERSION = "1.4.0"
+  val SPARK_SHIM_VERSION = SPARK_VERSION
 }
 
 object StreamSQLBuild extends Build {
@@ -59,7 +60,7 @@ object StreamSQLBuild extends Build {
     },
 
     unmanagedSourceDirectories in Compile +=
-      file(baseDirectory.value + "/shims/v" + Properties.SPARK_VERSION + "/src/main/scala"),
+      file(baseDirectory.value + "/shims/v" + Properties.SPARK_SHIM_VERSION + "/src/main/scala"),
     (compile in Compile) <<= (compile in Compile) dependsOn runScalaStyle,
 
     scalacOptions := Seq("-deprecation",

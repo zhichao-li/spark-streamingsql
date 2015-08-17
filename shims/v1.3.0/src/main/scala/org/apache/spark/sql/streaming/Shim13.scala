@@ -47,34 +47,8 @@ private[this] object SparkShim {
   }
 }
 
-private[streaming] case class WindowedPhysicalPlan(
-    windowDuration: Duration,
-    slideDuration: Option[Duration],
-    child: SparkPlan)
-  extends UnaryNode with StreamPlan {
-
-  @transient private val wrappedStream =
-    new DStream[Row](streamSqlContext.streamingContext) {
-      override def dependencies = parentStreams.toList
-      override def slideDuration: Duration = parentStreams.head.slideDuration
-      override def compute(validTime: Time): Option[RDD[Row]] = Some(child.execute())
-
-      private lazy val parentStreams = {
-        def traverse(plan: SparkPlan): Seq[DStream[Row]] = plan match {
-          case x: StreamPlan => x.stream :: Nil
-          case _ => plan.children.flatMap(traverse(_))
-        }
-        val streams = traverse(child)
-        assert(!streams.isEmpty, s"Input query and related plan $child is not a stream plan")
-        streams
-      }
-    }
-
-  @transient val stream = slideDuration.map(wrappedStream.window(windowDuration, _))
-    .getOrElse(wrappedStream.window(windowDuration))
-
-  override def output = child.output
-
+trait WindowTrait extends StreamPlan {
+  self: UnaryNode =>
   override def execute() = {
     import DStreamHelper._
     assert(validTime != null)
@@ -84,16 +58,9 @@ private[streaming] case class WindowedPhysicalPlan(
   }
 }
 
-/**
- * A PhysicalPlan wrapper of row based DStream, inject the validTime and generate an effective
- * RDD of current batchDuration.
- */
-private[streaming]
-case class PhysicalDStream(output: Seq[Attribute], @transient stream: DStream[Row])
-  extends SparkPlan with StreamPlan {
+trait StreamTrait extends StreamPlan {
+  self: SparkPlan =>
   import DStreamHelper._
-
-  def children = Nil
 
   override def execute() = {
     assert(validTime != null)

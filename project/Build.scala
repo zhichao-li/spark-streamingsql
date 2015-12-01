@@ -23,8 +23,7 @@ import org.scalastyle.sbt.ScalastylePlugin
 import scalariform.formatter.preferences._
 
 object Properties {
-  val SPARK_VERSION = "1.4.0"
-  val SPARK_SHIM_VERSION = SPARK_VERSION
+  val SPARK_VERSION = "1.4.1"
 }
 
 object StreamSQLBuild extends Build {
@@ -48,7 +47,7 @@ object StreamSQLBuild extends Build {
 
   lazy val commonSettings = Seq(
     organization := "spark.streamsql",
-    version      := "0.1.0-SNAPSHOT",
+    version      := s"0.1.0-${Properties.SPARK_VERSION}-SNAPSHOT",
     crossPaths   := false,
     scalaVersion := "2.10.4",
     scalaBinaryVersion := "2.10",
@@ -59,8 +58,6 @@ object StreamSQLBuild extends Build {
       org.scalastyle.sbt.PluginKeys.scalastyle.toTask("").value
     },
 
-    unmanagedSourceDirectories in Compile +=
-      file(baseDirectory.value + "/shims/v" + Properties.SPARK_SHIM_VERSION + "/src/main/scala"),
     (compile in Compile) <<= (compile in Compile) dependsOn runScalaStyle,
 
     scalacOptions := Seq("-deprecation",

@@ -23,7 +23,6 @@ import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.plans.logical._
 import org.apache.spark.sql.execution.{ExplainCommand, SparkPlan}
-import org.apache.spark.sql.hive.SparkHiveShim
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.streaming.dstream.DStream
 import org.apache.spark.streaming.{Duration, Time}
@@ -61,8 +60,13 @@ class SchemaDStream(
   }
 
   // To guard out some unsupported logical plans.
-  @transient private[streaming] val logicalPlan: LogicalPlan =
-    SparkHiveShim.guardLogical(SparkShim.guardLogical(queryExecution.logical))
+  @transient private[streaming] val logicalPlan: LogicalPlan = queryExecution.logical match {
+    case _: InsertIntoTable | _: WriteToFile =>
+      // TODO are we going to support this?
+      throw new IllegalStateException(s"logical plan ${queryExecution.logical} " +
+        s"is not supported currently")
+    case _ => queryExecution.logical
+  }
 
   @transient private lazy val parentStreams = {
     def traverse(plan: SparkPlan): Seq[DStream[Row]] = plan match {

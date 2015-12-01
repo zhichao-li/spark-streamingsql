@@ -36,17 +36,6 @@ private[streaming] case class WindowedLogicalPlan(
   override def output = child.output
 }
 
-trait WindowTrait extends StreamPlan {
-  self: UnaryNode =>
-  import DStreamHelper._
-  override def execute() = {
-    assert(validTime != null)
-    Utils.invoke(classOf[DStream[Row]], stream, "getOrCompute", (classOf[Time], validTime))
-      .asInstanceOf[Option[RDD[Row]]]
-      .getOrElse(new EmptyRDD[Row](sparkContext))
-  }
-}
-
 private[streaming] case class WindowedPhysicalPlan(
     windowDuration: Duration,
     slideDuration: Option[Duration],

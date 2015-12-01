@@ -76,10 +76,10 @@ private[streaming] case class WindowedPhysicalPlan(
   override def output = child.output
 
   override def doExecute(): RDD[Row] = {
-       import DStreamHelper._
-       assert(validTime != null)
-       Utils.invoke(classOf[DStream[Row]], stream, "getOrCompute", (classOf[Time], validTime))
-         .asInstanceOf[Option[RDD[Row]]]
-         .getOrElse(new EmptyRDD[Row](sparkContext))
-    }
+     import DStreamHelper._
+     assert(validTime != null)
+     Utils.invoke(classOf[DStream[Row]], stream, "getOrCompute", (classOf[Time], validTime))
+       .asInstanceOf[Option[RDD[Row]]]
+       .getOrElse(new EmptyRDD[Row](sparkContext))
+  }
 }

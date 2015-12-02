@@ -52,7 +52,7 @@ case class PhysicalDStream(output: Seq[Attribute], @transient stream: DStream[Ro
 
   def children = Nil
 
-  override def execute() = {
+  override def doExecute(): RDD[Row] = {
     assert(validTime != null)
     Utils.invoke(classOf[DStream[Row]], stream, "getOrCompute", (classOf[Time], validTime))
       .asInstanceOf[Option[RDD[Row]]]

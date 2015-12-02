@@ -23,7 +23,7 @@ import org.scalastyle.sbt.ScalastylePlugin
 import scalariform.formatter.preferences._
 
 object Properties {
-  val SPARK_VERSION = "1.3.0"
+  val SPARK_VERSION = "1.4.1"
 }
 
 object StreamSQLBuild extends Build {
@@ -47,7 +47,7 @@ object StreamSQLBuild extends Build {
 
   lazy val commonSettings = Seq(
     organization := "spark.streamsql",
-    version      := "0.1.0-SNAPSHOT",
+    version      := s"0.1.0-${Properties.SPARK_VERSION}-SNAPSHOT",
     crossPaths   := false,
     scalaVersion := "2.10.4",
     scalaBinaryVersion := "2.10",

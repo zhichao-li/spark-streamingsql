@@ -159,9 +159,13 @@ Q7. Can I insert (overwrite) query results to Table or external store (HBase)?
 
 Not support, you need to handle this through Scala code.
 
+Q8. Does it support the latest version of Spark?
+
+No, the pre-release only support Spark 1.4.1, and currently, we are still working on support 1.5.x and probably 1.6.x.
+
 ---
 
-Contact: [Jerry Shao](https://github.com/jerryshao), [Grace Huang](https://github.com/graceh), [Jiangang Duan](mailto: jiangang.duan@intel.com) [Hao Cheng](mailto:hao.cheng@intel.com)
+Contact: [Jerry Shao](https://github.com/jerryshao), [Grace Huang](https://github.com/graceh), [Jiangang Duan](mailto: jiangang.duan@intel.com), [Hao Cheng](mailto:hao.cheng@intel.com)
 
 ---
 

@@ -25,9 +25,10 @@ import org.apache.spark.sql.types.StructType
 import org.apache.spark.storage.StorageLevel
 import org.apache.spark.streaming.dstream.DStream
 import org.apache.spark.streaming.kafka.KafkaUtils
+import org.apache.spark.unsafe.types.UTF8String
 
 trait MessageToRowConverter extends Serializable {
-  def toRow(message: String): Row
+  def toRow(message: UTF8String): Row
 }
 
 class KafkaSource extends SchemaRelationProvider {
@@ -106,5 +107,6 @@ case class KafkaRelation(
     StringDecoder
     ](streamSqlContext.streamingContext, kafkaParams, topics, StorageLevel.MEMORY_AND_DISK_SER_2)
 
-  @transient val stream: DStream[Row] = kafkaStream.map(_._2).map(messageToRowConverter.toRow)
+  @transient val stream: DStream[Row] = kafkaStream.map(_._2).map(
+    msg => messageToRowConverter.toRow(UTF8String.fromString(msg)))
 }

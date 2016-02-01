@@ -21,9 +21,10 @@ import org.apache.spark.sql.{SQLContext, Row}
 import org.apache.spark.sql.streaming.StreamSQLContext
 import org.apache.spark.sql.streaming.sources.MessageToRowConverter
 import org.apache.spark.streaming.{Duration, StreamingContext}
+import org.apache.spark.unsafe.types.UTF8String
 
 class MessageDelimiter extends MessageToRowConverter {
-  def toRow(msg: String): Row = Row(msg)
+  def toRow(msg: UTF8String): Row = Row(msg)
 }
 
 object KafkaDDL {

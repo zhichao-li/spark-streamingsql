@@ -3,21 +3,19 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
     <groupId>spark.streamsql</groupId>
     <artifactId>spark.streamsql</artifactId>
     <version>0.1.0-SNAPSHOT</version>
 
     <properties>
         <scala.version>2.10.4</scala.version>
-        <spark.version>1.5.1</spark.version>
+        <spark.version>1.3.1</spark.version>
         <PermGen>64m</PermGen>
         <MaxPermGen>512m</MaxPermGen>
         <scala.binary.version>2.10</scala.binary.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <scala.macros.version>2.0.1</scala.macros.version>
     </properties>
-
 
     <dependencies>
         <dependency>
@@ -30,7 +28,6 @@
             <artifactId>jackson-mapper-asl</artifactId>
             <version>1.9.11</version>
         </dependency>
-
 
         <dependency>
             <groupId>org.apache.spark</groupId>
@@ -66,7 +63,6 @@
             <version>${spark.version}</version>
             <scope>compile</scope>
         </dependency>
-
 
         <dependency>
             <groupId>org.apache.spark</groupId>
@@ -180,38 +176,6 @@
                     </execution>
                 </executions>
             </plugin>
-
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>2.3</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <filters>
-                        <filter>
-                            <artifact>*:*</artifact>
-                            <excludes>
-                                <exclude>META-INF/*.SF</exclude>
-                                <exclude>META-INF/*.DSA</exclude>
-                                <exclude>META-INF/*.RSA</exclude>
-                            </excludes>
-                        </filter>
-                    </filters>
-                    <finalName>uber-${project.artifactId}-${project.version}</finalName>
-                </configuration>
-            </plugin>
-
         </plugins>
-
     </build>
 </project>
-
-

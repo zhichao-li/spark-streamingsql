@@ -17,11 +17,13 @@
 
 package org.apache.spark.sql.streaming.sources
 
-import org.apache.spark.sql.{Row, SQLContext}
+import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.sources.{BaseRelation, SchemaRelationProvider}
 import org.apache.spark.sql.streaming.StreamPlan
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.streaming.dstream.DStream
+import org.apache.spark.unsafe.types.UTF8String
 
 class SocketTextSource extends SchemaRelationProvider {
   override def createRelation(
@@ -71,6 +73,7 @@ case class SocketTextRelation(
   @transient private val socketStream = streamSqlContext.streamingContext.socketTextStream(
     host, port)
 
-  @transient val stream: DStream[Row] = socketStream.map(messageToRowConverter.toRow)
+  @transient val stream: DStream[InternalRow] = socketStream.map(msg =>
+    messageToRowConverter.toRow(UTF8String.fromString(msg)))
 }
 

@@ -19,38 +19,14 @@ package org.apache.spark.sql.streaming
 
 import java.util.ArrayList
 
+import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.streaming.test.BasicStreamSqlTest
+import org.apache.spark.streaming._
+
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.duration._
 
-import org.scalatest.concurrent.Eventually
-import org.scalatest.{BeforeAndAfter, FunSuite}
-
-import org.apache.spark.sql.SQLContext
-import org.apache.spark.streaming._
-import org.apache.spark.{Logging, SparkConf, SparkContext}
-
-class JoinTestSuite extends FunSuite with Eventually with BeforeAndAfter with Logging {
-
-  private var sc: SparkContext = null
-  private var ssc: StreamingContext = null
-  private var sqlc: SQLContext = null
-  private var streamQlContext: StreamSQLContext = null
-
-  def beforeFunction()  {
-    val conf = new SparkConf().setAppName("streamSQLTest").setMaster("local[4]")
-    sc = new SparkContext(conf)
-    ssc = new StreamingContext(sc, Seconds(1))
-    sqlc = new SQLContext(sc)
-    streamQlContext = new StreamSQLContext(ssc, sqlc)
-  }
-
-  def afterFunction()  {
-    if (ssc != null) {
-      ssc.stop()
-    }
-  }
-  before(beforeFunction)
-  after(afterFunction)
+class JoinTestSuite extends BasicStreamSqlTest {
 
   private def createStreamingTable(
       streamSQLContext: StreamSQLContext,
@@ -65,13 +41,13 @@ class JoinTestSuite extends FunSuite with Eventually with BeforeAndAfter with Lo
   }
 
   test("test streaming table join streaming table join RDD table with window function") {
-    createStreamingTable(streamQlContext, sqlc, ssc,
+    createStreamingTable(streamSQLContext, sqlc, ssc,
       "src/test/resources/registration.json", "registration")
-    createStreamingTable(streamQlContext, sqlc, ssc, "src/test/resources/student.json", "student")
+    createStreamingTable(streamSQLContext, sqlc, ssc, "src/test/resources/student.json", "student")
     val teacherDF = sqlc.jsonFile("src/test/resources/teacher.json")
     sqlc.registerDataFrameAsTable(teacherDF, "teacher")
     val resultList = new ArrayList[String]()
-    streamQlContext.sql(
+    streamSQLContext.sql(
       """
          SELECT
              avg(r.score),
@@ -106,12 +82,12 @@ class JoinTestSuite extends FunSuite with Eventually with BeforeAndAfter with Lo
   }
 
   test("test streaming table join RDD table ") {
-    createStreamingTable(streamQlContext, sqlc, ssc, "src/test/resources/registration.json",
+    createStreamingTable(streamSQLContext, sqlc, ssc, "src/test/resources/registration.json",
       "registration")
     val teacherDF = sqlc.jsonFile("src/test/resources/teacher.json")
     sqlc.registerDataFrameAsTable(teacherDF, "teacher")
     val resultList = ListBuffer[String]()
-    streamQlContext.sql(
+    streamSQLContext.sql(
       """
          SELECT
              r.className,

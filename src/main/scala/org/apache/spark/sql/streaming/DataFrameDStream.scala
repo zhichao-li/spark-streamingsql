@@ -19,11 +19,10 @@ package org.apache.spark.sql.streaming
 
 import org.apache.spark.annotation.Experimental
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.SQLContext
-import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.plans.logical._
-import org.apache.spark.sql.execution.{ExplainCommand, SparkPlan}
-import org.apache.spark.sql.types.StructType
+import org.apache.spark.sql.catalyst.{CatalystTypeConverters, InternalRow}
+import org.apache.spark.sql.execution.SparkPlan
+import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 import org.apache.spark.streaming.dstream.DStream
 import org.apache.spark.streaming.{Duration, Time}
 
@@ -39,10 +38,12 @@ import org.apache.spark.streaming.{Duration, Time}
  * destination.
  */
 @Experimental
-class SchemaDStream(
+class DataFrameDStream(
     @transient val streamSqlContext: StreamSQLContext,
     @transient val queryExecution: SQLContext#QueryExecution)
-  extends DStream[Row](streamSqlContext.streamingContext) {
+  extends DStream[Row](streamSqlContext.streamingContext){
+
+  val dataFrame = new DataFrame(streamSqlContext.sqlContext, queryExecution)
 
   def this(streamSqlContext: StreamSQLContext, logicalPlan: LogicalPlan) =
     this(streamSqlContext, streamSqlContext.sqlContext.executePlan(logicalPlan))
@@ -56,19 +57,19 @@ class SchemaDStream(
     // duration
     DStreamHelper.setValidTime(validTime)
     // Scan the streaming logic plan to convert streaming plan to specific RDD logic plan.
-    Some(queryExecution.executedPlan.execute())
-  }
-
-  // To guard out some unsupported logical plans.
-  @transient private[streaming] val logicalPlan: LogicalPlan = queryExecution.logical match {
-    case _: InsertIntoTable | _: CreateTableAsSelect[_] | _: WriteToFile =>
-      throw new IllegalStateException(s"logical plan ${queryExecution.logical} " +
-        s"is not supported currently")
-    case _ => queryExecution.logical
+    val rdd: RDD[Row] = {
+      // use a local variable to make sure the map closure doesn't capture the whole DataFrame
+      val schema = dataFrame.schema
+      queryExecution.executedPlan.execute().mapPartitions { rows =>
+        val converter = CatalystTypeConverters.createToScalaConverter(schema)
+        rows.map(converter(_).asInstanceOf[Row])
+      }
+    }
+    Some(rdd)
   }
 
   @transient private lazy val parentStreams = {
-    def traverse(plan: SparkPlan): Seq[DStream[Row]] = plan match {
+    def traverse(plan: SparkPlan): Seq[DStream[InternalRow]] = plan match {
       case x: StreamPlan => x.stream :: Nil
       case _ => plan.children.flatMap(traverse(_))
     }
@@ -78,26 +79,11 @@ class SchemaDStream(
     streams
   }
 
-  /**
-   * Returns the schema of this SchemaDStream (represented by a [[StructType]]).
-   */
-  def schema: StructType = queryExecution.analyzed.schema
-
-  /**
-   * Register itself as a temporary stream table.
-   */
-  def registerAsTable(tableName: String): Unit = {
-    streamSqlContext.registerDStreamAsTable(this, tableName)
+  // dataframe-like operations
+  def select(col: String, cols: String*): DataFrameDStream = {
+    new DataFrameDStream(streamSqlContext, dataFrame.select(col, cols: _*).queryExecution)
   }
-
-  /**
-   * Explain the query to get logical plan as well as physical plan.
-   */
   def explain(extended: Boolean): Unit = {
-    streamSqlContext.logicalPlanToStreamQuery(
-      ExplainCommand(queryExecution.logical, extended = extended))
-        .queryExecution.executedPlan.executeCollect().map {
-      r => println(r.getString(0))
-    }
+    dataFrame.explain(extended)
   }
 }

@@ -17,7 +17,7 @@
 
 package org.apache.spark.sql.streaming
 
-import org.apache.spark.sql.Row
+import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.streaming.dstream.DStream
 
 private[streaming] object StreamPlan {
@@ -26,5 +26,5 @@ private[streaming] object StreamPlan {
 
 trait StreamPlan {
   def streamSqlContext = StreamPlan.currentContext.get()
-  def stream: DStream[Row]
+  def stream: DStream[InternalRow]
 }

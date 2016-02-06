@@ -17,13 +17,15 @@
 
 package org.apache.spark.sql.streaming.examples
 
-import org.apache.spark.sql.{SQLContext, Row}
+import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.streaming.StreamSQLContext
 import org.apache.spark.sql.streaming.sources.MessageToRowConverter
 import org.apache.spark.streaming.{Duration, StreamingContext}
+import org.apache.spark.unsafe.types.UTF8String
 
 class MessageDelimiter extends MessageToRowConverter {
-  def toRow(msg: String): Row = Row(msg)
+  def toRow(msg: UTF8String): InternalRow = InternalRow(msg)
 }
 
 object KafkaDDL {
@@ -41,20 +43,21 @@ object KafkaDDL {
         |OPTIONS(
         |  zkQuorum "localhost:2181",
         |  groupId  "test",
-        |  topics   "aa:1",
+        |  topics   "test:1",
         |  messageToRow "org.apache.spark.sql.streaming.examples.MessageDelimiter")
       """.stripMargin)
 
-      streamSqlContext.sql(
+      val dataFrameDStream = streamSqlContext.sql(
       """
         |SELECT t.word, COUNT(t.word)
         |FROM (SELECT * FROM t_kafka) OVER (WINDOW '9' SECONDS, SLIDE '3' SECONDS) AS t
         |GROUP BY t.word
       """.stripMargin)
-      .foreachRDD { r => r.foreach(println) }
+      dataFrameDStream.explain(true)
+      dataFrameDStream.foreachRDD { r => r.foreach(println) }
 
     ssc.start()
-    ssc.awaitTerminationOrTimeout(60 * 1000)
+    ssc.awaitTerminationOrTimeout(60 * 1000000)
     ssc.stop()
   }
 

@@ -21,7 +21,7 @@ import org.apache.spark.sql.Strategy
 import org.apache.spark.sql.catalyst.planning.QueryPlanner
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.execution.SparkPlan
-import org.apache.spark.sql.sources.LogicalRelation
+import org.apache.spark.sql.execution.datasources.LogicalRelation
 import org.apache.spark.streaming.Time
 
 /** Stream related strategies to map stream specific logical plan to physical plan. */
@@ -43,13 +43,7 @@ class StreamStrategies extends QueryPlanner[SparkPlan] {
 
 private[streaming] object DStreamHelper {
   var validTime: Time = null
-
   def setValidTime(time: Time): Unit = {
-    if (validTime == null) {
-      validTime = time
-    } else if (validTime != time) {
-      validTime = time
-    } else {
-    }
+    validTime = time
   }
 }

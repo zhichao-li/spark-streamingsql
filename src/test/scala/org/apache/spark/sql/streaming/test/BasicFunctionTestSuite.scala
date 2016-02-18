@@ -107,8 +107,23 @@ class BasicFunctionTestSuite extends BasicStreamSqlTest {
       rdd.collect.foreach {row => resultBuffer += row.toString()}
     }
     ssc.start()
+    def isPrefixOf(resultBuffer: ListBuffer[String], expected: List[String]): Boolean = {
+      var i = 0
+      if (resultBuffer.length < expected.length) {
+        throw new RuntimeException(
+          s"expected: $expected is not the prefix of result: $resultBuffer")
+      }
+      while (i < expected.length) {
+        if (resultBuffer(i) != expected(i)) {
+          throw new RuntimeException(
+            s"expected: $expected is not the prefix of result: $resultBuffer")
+        }
+        i += 1
+      }
+      true
+    }
     eventually(timeout(20000 milliseconds), interval(100 milliseconds)) {
-      assert(resultBuffer.containsSlice(expectedBuffer))
+      assert(isPrefixOf(resultBuffer, expectedBuffer))
     }
   }
 }

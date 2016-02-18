@@ -106,9 +106,9 @@ class BasicFunctionTestSuite extends BasicStreamSqlTest {
       .map(_.copy()).foreachRDD {rdd =>
       rdd.collect.foreach {row => resultBuffer += row.toString()}
     }
-
     ssc.start()
-    ssc.awaitTerminationOrTimeout(10 * 1000)
-    assert(resultBuffer == expectedBuffer)
+    eventually(timeout(20000 milliseconds), interval(100 milliseconds)) {
+      assert(resultBuffer.containsSlice(expectedBuffer))
+    }
   }
 }

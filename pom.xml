@@ -233,7 +233,7 @@
                     <junitxml>.</junitxml>
                     <filereports>StreamSQLTestSuite.txt</filereports>
                     <argLine>
-                        -ea -Xmx3g -XX:MaxPermSize=${MaxPermGen} -XX:ReservedCodeCacheSize=${CodeCacheSize}"
+                        -ea -Xmx3g -XX:MaxPermSize=${MaxPermGen} -XX:ReservedCodeCacheSize=${CodeCacheSize} -Dlog4j.configuration=file:"conf/travis_log4j.properties"
                     </argLine>
                     <stderr/>
                 </configuration>
